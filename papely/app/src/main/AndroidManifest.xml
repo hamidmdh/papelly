@@ -51,7 +51,8 @@
 
         <!-- Required Default-SMS-app entry points (system shows app in Default SMS picker only
              if SENDTO smsto + RESPOND_VIA_MESSAGE are declared). Ported from upstream manifest. -->
-        <activity android:name=".ComposeActivity">
+        <activity android:name=".ComposeActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.SENDTO" />
                 <category android:name="android.intent.category.DEFAULT" />
