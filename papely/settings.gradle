@@ -13,4 +13,4 @@ dependencyResolutionManagement {
     }
 }
 rootProject.name = "Papely Messaging"
-include(":app")
+include ':app'
