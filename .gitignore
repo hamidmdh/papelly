@@ -1,0 +1,14 @@
+# Android / Gradle
+*.iml
+.gradle/
+local.properties
+.idea/
+.DS_Store
+build/
+captures/
+*.apk
+*.aab
+# Temp archives
+*.tgz
+*.tar.gz
+# Opencode temp (outside repo, just in case)

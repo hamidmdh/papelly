@@ -1,0 +1,44 @@
+--- papely/full-src/com/mdh/sms/datamodel/action/ReceiveSmsMessageAction.java
++++ papely/full-src/com/mdh/sms/datamodel/action/ReceiveSmsMessageAction.java (Papely: unknown -> silent + Unknown folder)
+@@
+ import com.mdh.sms.datamodel.data.ParticipantData;
+ import com.mdh.sms.sms.MmsSmsUtils;
++import com.mdh.sms.util.PapelyUnknownFilter;   // NEW (papely/full-src/com/mdh/sms/util/PapelyUnknownFilter.java)
++import com.mdh.sms.util.LogUtil;
+@@
+         final long threadId = MmsSmsUtils.Threads.getOrCreateThreadId(context, address);
+         messageValues.put(Sms.THREAD_ID, threadId);
+         final boolean blocked = BugleDatabaseOperations.isBlockedDestination(
+                 db, rawSender.getNormalizedDestination());
++
++        // ===== PAPELY FEATURE START =====
++        // Unknown senders (not in contacts incl. alphanumeric marketing IDs)
++        // -> file to Unknown folder, mark seen/read so no badge, skip notification below.
++        final boolean papelyUnknown =
++                PapelyUnknownFilter.isUnknown(context, address,
++                        messageValues.getAsString(Sms.BODY));
++        // ================================
++
+         final String conversationId = BugleDatabaseOperations.
+                 getOrCreateConversationFromRecipient(db, threadId, blocked, rawSender);
+@@
+-            final boolean read = messageValues.getAsBoolean(Sms.Inbox.READ)
++            // Papely: unknown messages never light the unread badge on Inbox.
++            final boolean read = papelyUnknown ? true :
++                    messageValues.getAsBoolean(Sms.Inbox.READ)
+                     || messageInFocusedConversation;
+             // If you have read it you have seen it
+-            final boolean seen = read || messageInObservableConversation || blocked;
++            final boolean seen = papelyUnknown ? true :
++                    read || messageInObservableConversation || blocked;
+@@
+-        // Show a notification to let the user know a new message has arrived
+-        BugleNotifications.update(false/*silent*/, conversationId, BugleNotifications.UPDATE_ALL);
++        // Papely: notify ONLY for known contacts. Unknown (incl. marketing) stays silent
++        // in the Unknown folder. Also record folder mapping for the conversation list.
++        PapelyUnknownFilter.recordFolder(context, conversationId,
++                papelyUnknown, messageValues.getAsString(Sms.BODY));
++        if (!papelyUnknown) {
++            // Show a notification to let the user know a new message has arrived
++            BugleNotifications.update(false/*silent*/, conversationId, BugleNotifications.UPDATE_ALL);
++        }

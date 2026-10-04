@@ -1,0 +1,5 @@
+// Top-level build file for Papely Messaging (com.mdh.sms)
+// Based on AOSP platform/packages/apps/Messaging (_upstream/), repackaged to com.mdh.sms.
+plugins {
+    id("com.android.application") version "8.5.2" apply false
+}
